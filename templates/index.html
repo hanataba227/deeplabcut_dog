@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강아지 포즈 분석</title>
+    
+    <style>
+        body {
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+        }
+
+        .container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            margin-top: 10px;
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .measurements {
+            background: #fff;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .measurements p {
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+
+    <script>
+        async function uploadImage(event) {
+            event.preventDefault(); // 기본 폼 제출 방지
+
+            let formData = new FormData(document.getElementById("uploadForm"));
+            
+            // 이미지 업로드 요청
+            let response = await fetch("/upload/", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+            console.log("📥 서버 응답:", data);  // 서버 응답 로그 출력
+
+            if (data.image_url && data.result_image) {
+                // 업로드한 이미지 표시
+                document.getElementById("uploadedImage").src = data.image_url;
+                document.getElementById("uploadedImage").style.display = "block";
+
+                // 분석된 이미지 표시
+                document.getElementById("resultImage").src = data.result_image;
+                document.getElementById("resultImage").style.display = "block";
+
+                // 측정값 업데이트
+                document.getElementById("neckSize").innerText = `📏 목둘레: ${data.measurements.neck_size.toFixed(2)} px`;
+                document.getElementById("chestSize").innerText = `📏 가슴둘레: ${data.measurements.chest_size.toFixed(2)} px`;
+                document.getElementById("backLength").innerText = `📏 등길이: ${data.measurements.back_length.toFixed(2)} px`;
+                document.getElementById("legLength").innerText = `📏 다리길이: ${data.measurements.leg_length.toFixed(2)} px`;
+
+                document.getElementById("measurements").style.display = "block"; // 측정값 박스 표시
+            } else {
+                alert("❌ 이미지 업로드 후 분석에 실패했습니다. 서버 로그를 확인하세요.");
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <h2>강아지 포즈 분석</h2>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit" onclick="uploadImage(event)">업로드</button>
+        </form>
+
+        <h3>업로드된 이미지:</h3>
+        <img id="uploadedImage" style="display: none;" width="300" alt="업로드된 이미지">
+
+        <h3>분석된 이미지:</h3>
+        <img id="resultImage" style="display: none;" width="300" alt="분석된 이미지">
+
+        <div id="measurements" class="measurements" style="display: none;">
+            <p id="neckSize"></p>
+            <p id="chestSize"></p>
+            <p id="backLength"></p>
+            <p id="legLength"></p>
+        </div>
+    </div>
+
+</body>
+</html>
